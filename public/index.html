@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Дневник на пријави — станбено домување</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#171C22;
+  --ink-soft:#5A646E;
+  --paper:#F1F2EE;
+  --surface:#FFFFFF;
+  --line:#D9DCD4;
+  --signal:#F2A900;
+  --p-urgent:#B3301C;
+  --p-high:#C9740B;
+  --p-mid:#3B6C93;
+  --p-low:#7A8590;
+  --done:#2F7A4F;
+  --shadow:0 1px 0 rgba(23,28,34,.05);
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --ink:#E8EAE5; --ink-soft:#9AA4AE; --paper:#14181C; --surface:#1C2126;
+    --line:#2E353C; --signal:#F2B830; --p-urgent:#E4674F; --p-high:#E5A040;
+    --p-mid:#6FA2C9; --p-low:#8A949E; --done:#5FBA86; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E8EAE5; --ink-soft:#9AA4AE; --paper:#14181C; --surface:#1C2126;
+  --line:#2E353C; --signal:#F2B830; --p-urgent:#E4674F; --p-high:#E5A040;
+  --p-mid:#6FA2C9; --p-low:#8A949E; --done:#5FBA86; --shadow:none;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:820px; margin:0 auto; padding:28px 18px 80px}
+header.top{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px}
+h1{font-family:Archivo,sans-serif; font-weight:700; font-size:clamp(24px,4.4vw,32px); letter-spacing:-.02em; margin:0}
+.sub{color:var(--ink-soft); font-size:14px; margin:4px 0 0}
+.tally{display:flex; gap:22px; font-family:Archivo,sans-serif}
+.tally div{text-align:right}
+.tally b{display:block; font-size:28px; font-weight:700; line-height:1}
+.tally span{font-size:12px; color:var(--ink-soft); font-family:"IBM Plex Sans",sans-serif}
+
+form.new{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; box-shadow:var(--shadow); margin-bottom:24px}
+.field{margin-bottom:12px}
+label{display:block; font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:5px}
+textarea,input,select{
+  width:100%; font:inherit; color:var(--ink); background:var(--paper);
+  border:1px solid var(--line); border-radius:7px; padding:9px 11px;
+}
+textarea{min-height:76px; resize:vertical}
+:focus-visible{outline:2px solid var(--signal); outline-offset:1px}
+.row{display:flex; gap:12px; flex-wrap:wrap}
+.row .field{flex:1 1 150px; margin-bottom:12px}
+button{font:inherit; cursor:pointer; border-radius:7px; border:1px solid transparent}
+.btn-primary{background:var(--signal); color:#171C22; font-weight:600; padding:10px 18px; font-family:Archivo,sans-serif}
+.btn-primary:hover{filter:brightness(1.05)}
+
+nav.tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:6px}
+.tab{background:none; padding:10px 14px; color:var(--ink-soft); font-weight:600; border-radius:7px 7px 0 0; margin-bottom:-1px; border-bottom:2px solid transparent}
+.tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--signal)}
+
+.toolbar{display:flex; justify-content:flex-end; padding:10px 0 14px}
+.toolbar select{width:auto; font-size:14px; padding:6px 10px}
+
+ul.list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+li.item{
+  background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--bar,var(--p-low));
+  border-radius:9px; padding:13px 14px; display:flex; gap:12px; align-items:flex-start; box-shadow:var(--shadow);
+}
+.check{appearance:none; width:22px; height:22px; min-width:22px; margin-top:2px; border:2px solid var(--line); border-radius:6px; background:transparent; cursor:pointer}
+.check:checked{background:var(--done); border-color:var(--done)}
+.check:checked::after{content:"✓"; color:#fff; display:block; text-align:center; line-height:18px; font-size:14px; font-weight:700}
+.body{flex:1; min-width:0}
+.desc{margin:0 0 6px; white-space:pre-wrap; overflow-wrap:anywhere}
+.item.done .desc{text-decoration:line-through; color:var(--ink-soft)}
+.meta{display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-size:13px; color:var(--ink-soft)}
+.pri{font-weight:600; color:var(--bar)}
+.del{background:none; color:var(--ink-soft); padding:4px 8px; font-size:13px; border:1px solid transparent}
+.del:hover{border-color:var(--line); color:var(--p-urgent)}
+.actions{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap}
+.link-btn{background:none; color:var(--ink-soft); font-size:13px; font-weight:600; padding:3px 8px; border:1px solid var(--line)}
+.link-btn:hover{color:var(--ink); border-color:var(--ink-soft)}
+.comments{margin:10px 0 0; padding:10px 0 0; border-top:1px dashed var(--line); display:flex; flex-direction:column; gap:8px}
+.comment{font-size:14px}
+.comment .when{display:block; font-size:12px; color:var(--ink-soft); margin-top:1px}
+.comment p{margin:0; white-space:pre-wrap; overflow-wrap:anywhere}
+.cform{display:flex; gap:8px; align-items:flex-start}
+.cform textarea{min-height:44px; font-size:14px; padding:7px 9px}
+.cform button{background:var(--ink); color:var(--paper); font-weight:600; padding:8px 12px; font-size:14px; white-space:nowrap}
+.editform .row{margin-bottom:0}
+.editform .btns{display:flex; gap:8px; margin-top:4px}
+.editform .cancel{background:none; border:1px solid var(--line); color:var(--ink-soft); padding:9px 14px}
+.empty{border:1px dashed var(--line); border-radius:9px; padding:28px 18px; text-align:center; color:var(--ink-soft)}
+.note{font-size:12px; color:var(--ink-soft); margin-top:18px}
+@media (prefers-reduced-motion:no-preference){ li.item{transition:border-color .15s} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Дневник на пријави</h1>
+      <p class="sub">Проблеми во зградата: пријава, приоритет, статус.</p>
+    </div>
+    <div class="tally">
+      <div><b id="cOpen">0</b><span>во тек</span></div>
+      <div><b id="cDone">0</b><span>завршени</span></div>
+    </div>
+  </header>
+
+  <form class="new" id="form">
+    <div class="field">
+      <label for="desc">Опис на проблемот</label>
+      <textarea id="desc" required placeholder="На пр. Тече вода од цевката во подрумот под влез 2."></textarea>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="pri">Приоритет</label>
+        <select id="pri">
+          <option value="urgent">Итно</option>
+          <option value="high">Висок</option>
+          <option value="mid" selected>Среден</option>
+          <option value="low">Низок</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="loc">Локација</label>
+        <input id="loc" placeholder="стан 12 / 3. спрат / подрум">
+      </div>
+      <div class="field">
+        <label for="date">Датум на пријава</label>
+        <input id="date" type="date" required>
+      </div>
+    </div>
+    <button class="btn-primary" type="submit">Додај пријава</button>
+  </form>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabOpen" aria-selected="true">Во тек</button>
+    <button class="tab" role="tab" id="tabDone" aria-selected="false">Завршени</button>
+  </nav>
+
+  <div class="toolbar">
+    <select id="sort" aria-label="Подредување">
+      <option value="date-desc">Најнови прво</option>
+      <option value="date-asc">Најстари прво</option>
+      <option value="pri">По приоритет</option>
+    </select>
+  </div>
+
+  <ul class="list" id="list"></ul>
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+const PRI = {
+  urgent:{label:"Итно", rank:0, color:"var(--p-urgent)"},
+  high:  {label:"Висок", rank:1, color:"var(--p-high)"},
+  mid:   {label:"Среден", rank:2, color:"var(--p-mid)"},
+  low:   {label:"Низок", rank:3, color:"var(--p-low)"}
+};
+const $ = s => document.querySelector(s);
+let items = [], tab = "open", editingId = null;
+const openComments = new Set();
+
+function editForm(it){
+  const f = document.createElement("div");
+  f.className = "editform";
+  const ta = document.createElement("textarea");
+  ta.value = it.desc; ta.setAttribute("aria-label", "Опис на проблемот");
+
+  const row = document.createElement("div"); row.className = "row";
+  const sel = document.createElement("select");
+  sel.setAttribute("aria-label", "Приоритет");
+  for(const k of ["urgent","high","mid","low"]){
+    const o = document.createElement("option");
+    o.value = k; o.textContent = PRI[k].label; if(it.pri === k) o.selected = true;
+    sel.appendChild(o);
+  }
+  const loc = document.createElement("input");
+  loc.value = it.loc || ""; loc.placeholder = "Локација"; loc.setAttribute("aria-label", "Локација");
+  const dt = document.createElement("input");
+  dt.type = "date"; dt.value = it.date || ""; dt.setAttribute("aria-label", "Датум на пријава");
+  for(const el of [sel, loc, dt]){
+    const w = document.createElement("div"); w.className = "field"; w.appendChild(el); row.appendChild(w);
+  }
+
+  const btns = document.createElement("div"); btns.className = "btns";
+  const save = document.createElement("button");
+  save.className = "btn-primary"; save.type = "button"; save.textContent = "Зачувај измени";
+  save.addEventListener("click", () => {
+    const desc = ta.value.trim(); if(!desc) return;
+    editingId = null;
+    put(Object.assign({}, it, {desc, pri: sel.value, loc: loc.value.trim(), date: dt.value}));
+    render();
+  });
+  const cancel = document.createElement("button");
+  cancel.className = "cancel"; cancel.type = "button"; cancel.textContent = "Откажи";
+  cancel.addEventListener("click", () => { editingId = null; render(); });
+  btns.append(save, cancel);
+
+  f.append(ta, row, btns);
+  return f;
+}
+
+/* ---- storage: real backend (Express + SQLite) over the API ---- */
+async function api(path, opts){
+  const res = await fetch("/api" + path, Object.assign(
+    { headers: { "Content-Type": "application/json" } }, opts || {}
+  ));
+  if(!res.ok) throw new Error("api_error_" + res.status);
+  if(res.status === 204) return null;
+  return res.json();
+}
+
+async function loadAll(){
+  try{
+    items = await api("/issues");
+    $("#note").textContent = "";
+  }catch(e){
+    $("#note").textContent = "Не можам да се поврзам со серверот. Провери дали работи и освежи.";
+  }
+  render();
+}
+
+async function put(item){
+  const exists = items.some(x => x.id === item.id);
+  try{
+    const saved = exists
+      ? await api("/issues/" + item.id, { method:"PUT", body: JSON.stringify(item) })
+      : await api("/issues", { method:"POST", body: JSON.stringify(item) });
+    const i = items.findIndex(x => x.id === item.id);
+    if(i > -1) items[i] = saved; else items.push(saved);
+  }catch(e){
+    $("#note").textContent = "Зачувувањето не успеа. Провери ја врската и обиди се пак.";
+  }
+  render();
+}
+
+async function addComment(id, text){
+  try{
+    const saved = await api("/issues/" + id + "/comments", { method:"POST", body: JSON.stringify({text}) });
+    const i = items.findIndex(x => x.id === id);
+    if(i > -1) items[i] = saved;
+  }catch(e){
+    $("#note").textContent = "Коментарот не се зачува. Обиди се пак.";
+  }
+  render();
+}
+
+async function remove(id){
+  const password = prompt("Внеси лозинка за бришење:");
+  if(password === null) return;
+  try{
+    const res = await fetch("/api/issues/" + id, {
+      method:"DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({password})
+    });
+    if(res.status === 401){ $("#note").textContent = "Погрешна лозинка — пријавата не е избришана."; render(); return; }
+    if(!res.ok) throw new Error("api_error_" + res.status);
+    items = items.filter(x => x.id !== id);
+    $("#note").textContent = "";
+  }catch(e){
+    $("#note").textContent = "Бришењето не успеа. Обиди се пак.";
+  }
+  render();
+}
+
+/* ---- rendering ---- */
+function fmt(iso){
+  if(!iso) return "";
+  const [y,m,d] = iso.slice(0,10).split("-");
+  return d + "." + m + "." + y;
+}
+function sorted(list){
+  const mode = $("#sort").value;
+  const byDate = (a,b) => (a.date || "").localeCompare(b.date || "");
+  return list.slice().sort((a,b) => {
+    if(mode === "date-asc") return byDate(a,b);
+    if(mode === "date-desc") return byDate(b,a);
+    const r = PRI[a.pri].rank - PRI[b.pri].rank;
+    return r !== 0 ? r : byDate(b,a);
+  });
+}
+function render(){
+  const open = items.filter(i => !i.done), done = items.filter(i => i.done);
+  $("#cOpen").textContent = open.length;
+  $("#cDone").textContent = done.length;
+  $("#tabOpen").textContent = "Во тек (" + open.length + ")";
+  $("#tabDone").textContent = "Завршени (" + done.length + ")";
+  $("#tabOpen").setAttribute("aria-selected", tab === "open");
+  $("#tabDone").setAttribute("aria-selected", tab === "done");
+
+  const list = $("#list");
+  list.innerHTML = "";
+  const shown = sorted(tab === "open" ? open : done);
+  if(!shown.length){
+    const p = document.createElement("li");
+    p.className = "empty";
+    p.textContent = tab === "open"
+      ? "Нема отворени пријави. Додај ја првата преку формата погоре."
+      : "Сè уште нема означено завршена пријава.";
+    list.appendChild(p);
+    return;
+  }
+  for(const it of shown){
+    const li = document.createElement("li");
+    li.className = "item" + (it.done ? " done" : "");
+    li.style.setProperty("--bar", PRI[it.pri].color);
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.className = "check"; cb.checked = !!it.done;
+    cb.setAttribute("aria-label", "Означи како завршено");
+    cb.addEventListener("change", () => {
+      put(Object.assign({}, it, {
+        done: cb.checked,
+        doneDate: cb.checked ? new Date().toISOString().slice(0,10) : null
+      }));
+    });
+
+    const body = document.createElement("div");
+    body.className = "body";
+
+    if(editingId === it.id){
+      body.appendChild(editForm(it));
+      li.append(cb, body);
+      list.appendChild(li);
+      continue;
+    }
+
+    const d = document.createElement("p");
+    d.className = "desc"; d.textContent = it.desc;
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const pri = document.createElement("span");
+    pri.className = "pri"; pri.textContent = PRI[it.pri].label;
+    meta.appendChild(pri);
+    const when = document.createElement("span");
+    when.textContent = "Пријавено " + fmt(it.date);
+    meta.appendChild(when);
+    if(it.loc){ const l = document.createElement("span"); l.textContent = it.loc; meta.appendChild(l); }
+    if(it.done && it.doneDate){ const c = document.createElement("span"); c.textContent = "Завршено " + fmt(it.doneDate); meta.appendChild(c); }
+    body.append(d, meta);
+
+    const cs = it.comments || [];
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const edit = document.createElement("button");
+    edit.className = "link-btn"; edit.type = "button"; edit.textContent = "Измени";
+    edit.addEventListener("click", () => { editingId = it.id; render(); });
+    const com = document.createElement("button");
+    com.className = "link-btn"; com.type = "button";
+    com.textContent = cs.length ? "Коментари (" + cs.length + ")" : "Додај коментар";
+    com.addEventListener("click", () => {
+      openComments.has(it.id) ? openComments.delete(it.id) : openComments.add(it.id);
+      render();
+    });
+    actions.append(edit, com);
+    body.appendChild(actions);
+
+    if(openComments.has(it.id) || cs.length){
+      const box = document.createElement("div");
+      box.className = "comments";
+      for(const c of cs){
+        const el = document.createElement("div");
+        el.className = "comment";
+        const p = document.createElement("p"); p.textContent = c.text;
+        const w = document.createElement("span"); w.className = "when"; w.textContent = fmt(c.date);
+        el.append(p, w);
+        box.appendChild(el);
+      }
+      if(openComments.has(it.id)){
+        const f = document.createElement("div");
+        f.className = "cform";
+        const ta = document.createElement("textarea");
+        ta.placeholder = "Нов коментар — на пр. Мајсторот доаѓа во петок.";
+        const b = document.createElement("button");
+        b.type = "button"; b.textContent = "Зачувај";
+        const send = () => {
+          const t = ta.value.trim(); if(!t) return;
+          addComment(it.id, t);
+          ta.value = "";
+        };
+        b.addEventListener("click", send);
+        ta.addEventListener("keydown", e => { if(e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); });
+        f.append(ta, b);
+        box.appendChild(f);
+      }
+      body.appendChild(box);
+    }
+
+    const del = document.createElement("button");
+    del.className = "del"; del.type = "button"; del.textContent = "Избриши";
+    del.addEventListener("click", () => remove(it.id));
+
+    li.append(cb, body, del);
+    list.appendChild(li);
+  }
+}
+
+/* ---- events ---- */
+$("#date").value = new Date().toISOString().slice(0,10);
+$("#form").addEventListener("submit", e => {
+  e.preventDefault();
+  const desc = $("#desc").value.trim();
+  if(!desc) return;
+  put({
+    id: "i" + Date.now() + Math.floor(Math.random()*1000),
+    desc, pri: $("#pri").value, loc: $("#loc").value.trim(),
+    date: $("#date").value, done: false, doneDate: null
+  });
+  $("#desc").value = ""; $("#loc").value = "";
+  $("#date").value = new Date().toISOString().slice(0,10);
+  tab = "open"; render();
+  $("#desc").focus();
+});
+$("#tabOpen").addEventListener("click", () => { tab = "open"; render(); });
+$("#tabDone").addEventListener("click", () => { tab = "done"; render(); });
+$("#sort").addEventListener("change", render);
+
+render();
+loadAll();
+</script>
+</body>
+</html>

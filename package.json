@@ -1,0 +1,13 @@
+{
+  "name": "prijavi-problemi",
+  "version": "1.0.0",
+  "description": "Апликација за пријавување проблеми во станбено домување",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^4.19.2"
+  }
+}
